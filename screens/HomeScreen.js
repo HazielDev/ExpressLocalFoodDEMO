@@ -141,7 +141,7 @@ export default function HomeScreen({navigation}){
                     <Text style={st.subTitle}>Nuestros Restaurantes favoritos</Text>
                 </View>
                 {rest.map((restau) =>(
-                    <RestaurantCard key={restau.id} data={restau} />
+                    <RestaurantCard key={restau.id} data={restau} navigation={navigation}/>
                 ))}
                 <View style={{marginTop: 40}} />
             </ScrollView>

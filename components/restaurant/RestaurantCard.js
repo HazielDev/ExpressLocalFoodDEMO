@@ -1,13 +1,13 @@
-import { View, StyleSheet, Text, Image } from "react-native";
+import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native";
 
 
-export default function RestaurantCard({data}){
+export default function RestaurantCard({data, navigation}){
 
     return(
-        <View style={st.container}>
+        <TouchableOpacity style={st.container} onPress={()=>{navigation.navigate('Detail', {info: data})}}>
             <Image style={st.img} source={{uri: data.imagen}} /> 
             <Text style={st.titl}>{data.nombre}</Text>
-        </View>
+        </TouchableOpacity>
     )
 }
 

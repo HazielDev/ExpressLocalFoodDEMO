@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Test from "../screens/Test";
 import LoginScreen from "../screens/LoginScreen";
 import NavigationTabs from "./NavigationTabs";
+import DetailMovie from "../screens/DetailMovie";
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +15,7 @@ export default function NavigationStack(){
 
             <Stack.Screen name="Test" component={Test} options={{ headerShown: false }}  />
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}  />
+            <Stack.Screen name="Detail" component={DetailMovie} options={{ headerShown: false }}  />
         </Stack.Navigator>
     )
 }
