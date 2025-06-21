@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
 import { auth } from "../firebase";
 import EditorItem from "../components/panel/EditorItem";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs, updateDoc, addDoc } from "firebase/firestore";
 import { db } from "../firebase"; 
 
 export default function PanelScreen({navigation}){
 
+    const [newNombre, setNewNombre] = useState("");
+    const [newDesc, setNewDesc] = useState("");
     const [actualModal, setActualModal] = useState("");
     const [actualType, setActualType] = useState("restaurante");
     const [items, setitems] = useState([]);
     const [actualItem, setActualItem] = useState(null);
-    const [newNombre, setNewNombre] = useState("");
-    const [newDesc, setNewDesc] = useState("");
 
-    const HandleNewItem = async () => {
+    const HandleNewItem = async ({nombre, desc}) => {
 
         const info = {
-            nombre: newNombre,
-            descripcion: newDesc
+            nombre: nombre,
+            descripcion: desc
         }
 
         try {
@@ -35,15 +35,15 @@ export default function PanelScreen({navigation}){
 
     }
 
-    const HandleUpdateItem = async () => {
+    const HandleUpdateItem = async (nombre, desc) => {
 
         const info = {
-            nombre: newNombre,
-            descripcion: newDesc
+            nombre: nombre,
+            descripcion: desc
         }
 
         try {
-            const docRef = doc(db, 'categoria', actualItem.id);
+            const docRef = doc(db, actualType, actualItem.id);
             await updateDoc(docRef, info);
             console.log("Categoría actualizada");
         } catch (error) {
@@ -66,33 +66,45 @@ export default function PanelScreen({navigation}){
         </View>
     )
 
-    const EditorComponent = () =>(
-        <View style={st.container}>
-            <TouchableOpacity style={st.atrasBtn} onPress={()=>{setActualModal("")}}>
-                <Text style={st.text}>Ir Atras</Text>
-            </TouchableOpacity>
-            <Text style={st.title}>Editando: {actualItem.nombre}</Text>
-            <TextInput style={st.searcher} placeholder="Nombre" placeholderTextColor={'grey'} value={actualItem.nombre} onChangeText={setNewNombre}/>
-            <TextInput style={st.searcher} placeholder="Descripcion" placeholderTextColor={'grey'} value={actualItem.descripcion} onChangeText={setNewDesc}/>
-            <TouchableOpacity onPress={HandleUpdateItem} style={st.newBtn}>
-                <Text style={[st.text, {textAlign: 'center'}]}>Editar Elemento</Text>
-            </TouchableOpacity>
-        </View>
-    )
+    const EditorComponent = () =>{
 
-    const NewItemComponent = () => (
+        const [internalName, setInternalName] = useState(newNombre);
+        const [internalDesc, setInternalDesc] = useState(newDesc);
+
+        return(
+            <View style={st.container}>
+                <TouchableOpacity style={st.atrasBtn} onPress={()=>{setActualModal("")}}>
+                    <Text style={st.text}>Ir Atras</Text>
+                </TouchableOpacity>
+                <Text style={st.title}>Editando: {actualItem.nombre}</Text>
+                <TextInput style={st.searcher} placeholder="Nombre" placeholderTextColor={'grey'} value={internalName} onChangeText={setInternalName}/>
+                <TextInput style={st.searcher} placeholder="Descripcion" placeholderTextColor={'grey'} value={internalDesc} onChangeText={setInternalDesc}/>
+                <TouchableOpacity onPress={()=>{HandleUpdateItem(internalName, internalDesc)}} style={st.newBtn}>
+                    <Text style={[st.text, {textAlign: 'center'}]}>Editar Elemento</Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
+    const NewItemComponent = () => {
+
+        const [internalName, setInternalName] = useState("");
+        const [internalDesc, setInternalDesc] = useState("");
+
+        return(
         <View style={st.container}>
             <TouchableOpacity style={st.atrasBtn} onPress={()=>{setActualModal("")}}>
                 <Text style={st.text}>Ir Atras</Text>
             </TouchableOpacity>
             <Text style={st.title}>Añadir nuevo {actualType}</Text>
-            <TextInput style={st.searcher} placeholder="Nombre" placeholderTextColor={'grey'} onChangeText={setNewNombre}/>
-            <TextInput style={st.searcher} placeholder="Descripcion" placeholderTextColor={'grey'} value={setNewDesc}/>
-            <TouchableOpacity onPress={HandleNewItem} style={st.newBtn}>
-                <Text style={st.btnText}>Añadir nuevo elemento</Text>
+            <TextInput style={st.searcher} placeholder="Nombre" placeholderTextColor={'grey'} value={internalName} onChangeText={setInternalName}/>
+            <TextInput style={st.searcher} placeholder="Descripcion" placeholderTextColor={'grey'} value={internalDesc} onChangeText={setInternalDesc}/>
+            <TouchableOpacity onPress={()=>{HandleNewItem({nombre: internalName, desc: internalDesc})}} style={st.newBtn}>
+                <Text style={st.text}>Añadir nuevo elemento</Text>
             </TouchableOpacity>
         </View>
-    )
+        )
+    }
 
     const ListComponent = () =>(
         <View style={st.container}>
@@ -100,9 +112,14 @@ export default function PanelScreen({navigation}){
                 <Text style={st.text}>Ir Atras</Text>
             </TouchableOpacity>
             <Text style={st.title}>Lista de {actualType}s</Text>
-            <TouchableOpacity style={st.newBtn}><Text style={st.text}>Añadir nuevo elemento</Text></TouchableOpacity>
+            <TouchableOpacity style={st.newBtn} onPress={()=>{setActualModal('nuevo')}}><Text style={st.text}>Añadir nuevo elemento</Text></TouchableOpacity>
             {items.map((it) => (
-                <EditorItem key={it.id} click={()=>{setActualItem(it); setActualModal('editor')}} data={it} type={actualType} loadItems={fetchItems}/>
+                <EditorItem key={it.id} click={()=>{
+                    setActualItem(it); 
+                    setActualModal('editor'); 
+                    setNewNombre(it.nombre); 
+                    setNewDesc(it.descripcion); 
+                }} data={it} type={actualType} loadItems={fetchItems}/>
             ))}
         </View>
     )
@@ -145,9 +162,19 @@ export default function PanelScreen({navigation}){
         }
     }
 
-    return(
-        <RenderComp />
+    return (
+    auth.currentUser === undefined ? (
+        <NoAccountComponent />
+    ) : actualModal === 'editor' ? (
+        <EditorComponent />
+    ) : actualModal === 'nuevo' ? (
+        <NewItemComponent />
+    ) : actualModal === 'list' ? (
+        <ListComponent />
+    ) : (
+        <OptionsComponent />
     )
+);
 
 }
 

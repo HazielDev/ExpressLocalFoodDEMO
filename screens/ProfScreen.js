@@ -9,30 +9,6 @@ export default function ProfScreen({navigation}){
     
     console.log(auth);
     
-
-    const [hCode, setHCode] = useState("");
-    const [nombreStorage, setNombreStorage] = useState("");
-
-    useEffect(() => {
-
-        let tempCode = "";
-        const cargarHCode = async () => {
-            tempCode = await AsyncStorage.getItem('hCode');
-
-            setHCode(tempCode)
-        }
-
-        const cargarNombre = async () => {
-            let nombre = await AsyncStorage.getItem('nombre');
-            console.log(`Nombre: ${nombre}`);
-            setNombreStorage(nombre)
-        }
-
-        cargarHCode();
-        cargarNombre();
-
-    }, [])
-    
     const closeSession = () => {
         auth.signOut()
         .then(() => {

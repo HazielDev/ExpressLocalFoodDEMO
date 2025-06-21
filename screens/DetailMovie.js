@@ -1,8 +1,6 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList } from "react-native";
 import { ChevronLeft, Clapperboard, Dot, Send, Star } from "lucide-react-native";
-import CardNextMovie from "../components/CardNextMovie";
 import axios from "axios";
 
 export default function DetailMovie({route, navigation}){
@@ -21,9 +19,8 @@ export default function DetailMovie({route, navigation}){
                 console.error('Error al obtener los datos:', error);
               });
         }
-
         getProds();
-
+        
     }, [null]);
 
     return(
@@ -38,19 +35,6 @@ export default function DetailMovie({route, navigation}){
                 </View>
                 <Text style={st.title}>{info.nombre}</Text>
                 <Text style={st.descr}>Nuestras comidas</Text>
-                {/* <Text style={st.descr}>{info.description}</Text>
-                <View style={st.contComentarios}>
-                    <Text style={st.commentTitle} >Productos relacionados:</Text>
-                    <FlatList
-                        data={movies} 
-                        renderItem={renderItem} 
-                        keyExtractor={(item, index) => index.toString()} 
-                        contentContainerStyle={st.scrollHor} 
-                        horizontal
-                        showsVerticalScrollIndicator={false}
-                        style={{paddingBottom: 32}}
-                    />
-                </View> */}
             </ScrollView>
         </View>
     );
